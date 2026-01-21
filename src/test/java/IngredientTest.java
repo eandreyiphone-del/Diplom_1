@@ -1,3 +1,4 @@
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -5,6 +6,7 @@ import ru.yandex.practicum.Ingredient;
 import ru.yandex.practicum.IngredientType;
 
 import static org.junit.Assert.assertEquals;
+
 
 @RunWith(Parameterized.class)
 public class IngredientTest {

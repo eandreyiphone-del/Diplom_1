@@ -1,3 +1,4 @@
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -9,20 +10,24 @@ import ru.yandex.practicum.Burger;
 import ru.yandex.practicum.Ingredient;
 import ru.yandex.practicum.IngredientType;
 
-import java.util.Arrays;
-
 import static org.junit.Assert.*;
 
-@RunWith(MockitoJUnitRunner.class)
+@RunWith(Parameterized.class)
 public class BurgerTest {
-    @Mock
-    Bun bun;
-    private IngredientType type;
-    private String name;
-    private float price;
 
+    // Параметры, которые передаются в конструкторе теста
+    private final IngredientType type;
+    private final String name;
+    private final float price;
+
+    // Поля для моков
+    private Bun bun;
+    private Ingredient ingredientFirst;
+    private Burger burger;
+
+    // Массив данных для параметризации
     @Parameterized.Parameters
-    public static Object[] data(){
+    public static Object[] data() {
         return new Object[][]{
                 {IngredientType.SAUCE, "hot sauce", 100},
                 {IngredientType.SAUCE, "sour cream", 200},
@@ -30,56 +35,100 @@ public class BurgerTest {
                 {IngredientType.FILLING, "cutlet", 100},
                 {IngredientType.FILLING, "dinosaur", 200},
                 {IngredientType.FILLING, "sausage", 300},
-                {IngredientType.SAUCE,"",0},
-                {IngredientType.SAUCE,"",-100},
+                {IngredientType.SAUCE, "", 0},
+                {IngredientType.SAUCE, "", -100},
         };
     }
 
+    // Конструктор для приема параметров
+    public BurgerTest(IngredientType type, String name, float price) {
+        this.type = type;
+        this.name = name;
+        this.price = price;
+
+        // Создание моков вручную
+        this.bun = Mockito.mock(Bun.class);
+        this.ingredientFirst = Mockito.mock(Ingredient.class);
+        this.burger = new Burger(); // Настоящий объект, поскольку мы тестируем его логику
+    }
+
     @Test
-    public void setBunsTest(){
-        Bun bun = new Bun("red bun", 300);
-        Burger burger = new Burger();
+    public void setBunsTest() {
+        // Настройка моков
+        Mockito.when(bun.getName()).thenReturn("Red Bun");
+        Mockito.when(bun.getPrice()).thenReturn(300f);
+
+        // Действие
         burger.setBuns(bun);
+
+        // Проверка результата
         assertEquals(bun, burger.bun);
     }
 
     @Test
-    public void addIngredientTest(){
-        Burger burger = new Burger();
-        burger.addIngredient(new Ingredient(type, name, price));
-        assertFalse("Упс. Что-то пошло не так.", burger.ingredients.isEmpty());
+    public void addIngredientTest() {
+        // Настройка моков
+        Mockito.when(ingredientFirst.getType()).thenReturn(type);
+        Mockito.when(ingredientFirst.getName()).thenReturn(name);
+        Mockito.when(ingredientFirst.getPrice()).thenReturn(price);
+
+        // Действие
+        burger.addIngredient(ingredientFirst);
+
+        // Проверка результата
+        assertFalse("Ошибка: список ингредиентов пустой", burger.ingredients.isEmpty());
     }
 
     @Test
-    public void removeIngredientTest(){
-        Burger burger = new Burger();
-        burger.addIngredient(new Ingredient(type, name, price));
+    public void removeIngredientTest() {
+        // Настройка моков
+        Mockito.when(ingredientFirst.getType()).thenReturn(type);
+        Mockito.when(ingredientFirst.getName()).thenReturn(name);
+        Mockito.when(ingredientFirst.getPrice()).thenReturn(price);
+
+        // Действие
+        burger.addIngredient(ingredientFirst);
         burger.removeIngredient(0);
-        assertTrue("Упс. Что-то пошло не так.", burger.ingredients.isEmpty());
+
+        // Проверка результата
+        assertTrue("Ошибка: ингредиент не удалён", burger.ingredients.isEmpty());
     }
 
     @Test
-    public void moveIngredient(){
-        Burger burger = new Burger();
-        burger.addIngredient(new Ingredient(IngredientType.FILLING, "dinosaur", 100));
-        burger.addIngredient(new Ingredient(IngredientType.SAUCE, "sour cream", 200));
+    public void moveIngredient() {
+        // Создание второго мока ингредиента
+        Ingredient secondIngredient = Mockito.mock(Ingredient.class);
+        Mockito.when(secondIngredient.getType()).thenReturn(IngredientType.SAUCE);
+        Mockito.when(secondIngredient.getName()).thenReturn("Sour Cream");
+        Mockito.when(secondIngredient.getPrice()).thenReturn(200f);
+
+        // Действие
+        burger.addIngredient(ingredientFirst);
+        burger.addIngredient(secondIngredient);
         burger.moveIngredient(0, 1);
-        String expectedResult = "sour cream";
-        String actualResult = burger.ingredients.get(0).name;
-        assertEquals("Упс. Что-то пошло не так.", expectedResult, actualResult);
+
+        // Проверка результата
+        assertEquals("Sour Cream", burger.ingredients.get(0).getName());
     }
 
     @Test
-    public void getPriceTest(){
-        Burger burger = new Burger();
+    public void getPriceTest() {
+        // Настройка моков
+        Mockito.when(bun.getPrice()).thenReturn(300f);
+        Mockito.when(ingredientFirst.getPrice()).thenReturn(150f);
+
+        // Действие
         burger.setBuns(bun);
-        burger.addIngredient(new Ingredient(type, name, price));
-        burger.addIngredient(new Ingredient(type, name, price));
-        assertEquals(0.0, burger.getPrice(), 0.001);
+        burger.addIngredient(ingredientFirst);
+        burger.addIngredient(ingredientFirst);
+
+        // Оцениваем цену
+        float expectedPrice = 300f * 2 + 150f * 2;
+
+        // Проверка результата
+        assertEquals(expectedPrice, burger.getPrice(), 0.001);
     }
 
-    @Mock
-    Ingredient ingredientFirst;
     @Test
     public void getReceiptTest(){
         Burger burger = new Burger();
@@ -94,6 +143,6 @@ public class BurgerTest {
         Mockito.when(ingredientFirst.getName()).thenReturn("Флюоресцентная булка R2-D3");
         Mockito.when(ingredientFirst.getType()).thenReturn(IngredientType.FILLING);
 
-        assertEquals(result, burger.getReceipt());
+        Assert.assertEquals(result, burger.getReceipt());
     }
 }
