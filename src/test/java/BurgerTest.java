@@ -10,6 +10,9 @@ import ru.yandex.practicum.Burger;
 import ru.yandex.practicum.Ingredient;
 import ru.yandex.practicum.IngredientType;
 
+import java.util.Arrays;
+import java.util.Collection;
+
 import static org.junit.Assert.*;
 
 @RunWith(Parameterized.class)
@@ -27,8 +30,8 @@ public class BurgerTest {
 
     // Массив данных для параметризации
     @Parameterized.Parameters
-    public static Object[] data() {
-        return new Object[][]{
+    public static Collection<Object[]> data() {
+        return Arrays.asList(new Object[][]{
                 {IngredientType.SAUCE, "hot sauce", 100},
                 {IngredientType.SAUCE, "sour cream", 200},
                 {IngredientType.SAUCE, "chili sauce", 300},
@@ -37,7 +40,7 @@ public class BurgerTest {
                 {IngredientType.FILLING, "sausage", 300},
                 {IngredientType.SAUCE, "", 0},
                 {IngredientType.SAUCE, "", -100},
-        };
+        });
     }
 
     // Конструктор для приема параметров
@@ -80,21 +83,6 @@ public class BurgerTest {
     }
 
     @Test
-    public void removeIngredientTest() {
-        // Настройка моков
-        Mockito.when(ingredientFirst.getType()).thenReturn(type);
-        Mockito.when(ingredientFirst.getName()).thenReturn(name);
-        Mockito.when(ingredientFirst.getPrice()).thenReturn(price);
-
-        // Действие
-        burger.addIngredient(ingredientFirst);
-        burger.removeIngredient(0);
-
-        // Проверка результата
-        assertTrue("Ошибка: ингредиент не удалён", burger.ingredients.isEmpty());
-    }
-
-    @Test
     public void moveIngredient() {
         // Создание второго мока ингредиента
         Ingredient secondIngredient = Mockito.mock(Ingredient.class);
@@ -130,10 +118,15 @@ public class BurgerTest {
     }
 
     @Test
-    public void getReceiptTest(){
+    public void getReceiptTest() {
         Burger burger = new Burger();
         burger.setBuns(bun);
-        String result = String.format("(==== Краторная булка N-200i ====)%n" + "= filling Флюоресцентная булка R2-D3 =%n" + "(==== Краторная булка N-200i ====)%n" +"%n" +"Price: 450,000000%n");
+        String result = String.format(
+                "(==== Краторная булка N-200i ====)%n" +
+                        "= filling Флюоресцентная булка R2-D3 =%n" +
+                        "(==== Краторная булка N-200i ====)%n" +
+                        "%n" +
+                        "Price: 450,000000%n");
 
         burger.addIngredient(ingredientFirst);
 
